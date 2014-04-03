@@ -1,0 +1,12 @@
+﻿@if (Model.Guid != null)
+{
+    <div class="postinput">
+        @Html.Image((string)Model.ImgSrc, "", new { })
+        @Html.Hidden((string)Model.DefGuidFieldName, (object)Model.Guid)
+        <p>
+            @Html.TextBox((string)Model.DefTextBoxName, "", new { size = "22", @class = "comment" })
+            <small>@T("Verification letters")</small>
+        </p>
+    </div>
+}   
+
