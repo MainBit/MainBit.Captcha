@@ -6,6 +6,7 @@ using Orchard.ContentManagement.MetaData;
 using Orchard.Mvc;
 using Orchard;
 using Orchard.ContentManagement;
+using MainBit.Captcha.ViewModel;
 
 namespace MainBit.Captcha.Services
 {
@@ -13,34 +14,45 @@ namespace MainBit.Captcha.Services
     {
         private readonly IContentDefinitionManager _contentDefinitionManager;
         private readonly IOrchardServices _services;
+        private readonly UrlHelper _urlHelper;
 
         public DefaultCaptchaService(
             IContentDefinitionManager contentDefinitionManager,
-            IOrchardServices services)
+            IOrchardServices services,
+            UrlHelper urlHelper)
         {
             _contentDefinitionManager = contentDefinitionManager;
             _services = services;
+            _urlHelper = urlHelper;
         }
 
-        public string GenerateCaptcha(
-            string challengeGuid,
-            CaptchaSettingsPart settings = null)
+        public CaptchaSettingsPart GetSettings()
         {
-            if (settings == null)
-            {
-                //var settings = _services.WorkContext.CurrentSite.As<CaptchaSettingsPart>();
-                settings = new CaptchaSettingsPart();
-            }
-            var httpContext = _services.WorkContext.HttpContext;
-
-            // Generate and store random solution text
-            httpContext.Session[CaptchaServiceConstants.SESSION_KEY_PREFIX + challengeGuid] = MakeRandomSolution(settings);
-
-            var urlHelper = new UrlHelper(httpContext.Request.RequestContext);
-
-            return urlHelper.Action("Render", "CaptchaImage",
-                new { area = "MainBit.Captcha", challengeGuid, height = settings.ImageHeight, width = settings.ImageWidth });
+            return new CaptchaSettingsPart();
         }
+
+        public CaptchaViewModel GetOrGenerateCaptcha(Guid challengeGuid)
+        {
+            var captcha = _services.WorkContext.HttpContext.Session[CaptchaServiceConstants.SESSION_KEY_PREFIX + challengeGuid] as CaptchaViewModel;
+            if(captcha == null) {
+                var settings = GetSettings();
+
+                captcha = new CaptchaViewModel()
+                {
+                    Guid = challengeGuid,
+                    Src = _urlHelper.Action("Render", "CaptchaImage",
+                        new { area = "MainBit.Captcha", challengeGuid, height = settings.ImageHeight, width = settings.ImageWidth }),
+                    Width = settings.ImageWidth,
+                    Height = settings.ImageHeight,
+                    Value = MakeRandomSolution(settings)
+                };
+
+                _services.WorkContext.HttpContext.Session[CaptchaServiceConstants.SESSION_KEY_PREFIX + challengeGuid] = captcha;
+            }
+
+            return captcha;
+        }
+
 
         private static string MakeRandomSolution(CaptchaSettingsPart settings)
         {
@@ -63,27 +75,12 @@ namespace MainBit.Captcha.Services
             return new string(buf);
         }
 
-        public bool IsCaptchaValid(
-            string guidFieldName = CaptchaServiceConstants.CAPTCHA_DEFAULT_GUID_FIELD_NAME,
-            string valueFieldName = CaptchaServiceConstants.CAPTCHA_DEFAULT_VALUE_FIELD_NAME)
+        public bool IsCaptchaValid(Guid challengeGuid, string value)
         {
-            //var settings = _services.WorkContext.CurrentSite.As<CaptchaSettingsPart>();
-            var settings = new CaptchaSettingsPart();
-            var httpContext = _services.WorkContext.HttpContext;
+            var captcha = _services.WorkContext.HttpContext.Session[CaptchaServiceConstants.SESSION_KEY_PREFIX + challengeGuid] as CaptchaViewModel;
+            if(captcha == null) { return false; }
 
-            if (settings.IsForNotAuthUsersOnly && httpContext.Request.IsAuthenticated)
-                return true;
-
-            var challengeGuid = httpContext.Request.Params[guidFieldName];
-            var attemptedSolution = httpContext.Request.Params[valueFieldName];
-            var guidKey = CaptchaServiceConstants.SESSION_KEY_PREFIX + challengeGuid;
-
-            // Immediately remove the solution from Session to prevent replay attacks
-            var solution = (string)httpContext.Session[guidKey];
-            httpContext.Session.Remove(guidKey);
-
-            return guidKey != null && solution != null &&
-                attemptedSolution.Equals(solution, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(captcha.Value, value, StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }

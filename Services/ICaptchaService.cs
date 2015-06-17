@@ -1,5 +1,7 @@
 ﻿using MainBit.Captcha.Models;
+using MainBit.Captcha.ViewModel;
 using Orchard;
+using System;
 namespace MainBit.Captcha.Services
 {
     internal static class CaptchaServiceConstants
@@ -11,9 +13,8 @@ namespace MainBit.Captcha.Services
 
     public interface ICaptchaService : IDependency
     {
-        string GenerateCaptcha(string challengeGuid, CaptchaSettingsPart settings = null);
-        bool IsCaptchaValid(
-            string guidFieldName = CaptchaServiceConstants.CAPTCHA_DEFAULT_GUID_FIELD_NAME,
-            string valueFieldName = CaptchaServiceConstants.CAPTCHA_DEFAULT_VALUE_FIELD_NAME);
+        CaptchaSettingsPart GetSettings();
+        CaptchaViewModel GetOrGenerateCaptcha(Guid challengeGuid);
+        bool IsCaptchaValid(Guid challengeGuid, string value);
     }
 }

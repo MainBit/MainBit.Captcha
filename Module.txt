@@ -3,7 +3,7 @@ AntiForgery: enabled
 Author: neTp9c
 Website: http://mainbit.com
 Version: 1.0
-OrchardVersion: 1.8
+OrchardVersion: 1.9
 Description: Description for the module
 Dependencies: 
 Features:

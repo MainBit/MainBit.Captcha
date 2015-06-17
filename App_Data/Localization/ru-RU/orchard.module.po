@@ -1,11 +1,8 @@
 # Orchard resource strings - ru-RU
 # Copyright (c) 2012 neTp9c
 
+msgid "Captcha"
+msgstr "Защита от роботов"
 
-#| msgid "Type captcha"
-msgid "Type captcha"
-msgstr "Введите текст с картинки"
-
-#| msgid "Captcha invalid."
-msgid "Captcha invalid."
-msgstr "Неверно введен текст с картинки."
+msgid "Capcha is invalid."
+msgstr "Поле Защита от роботов заполнено неверно."

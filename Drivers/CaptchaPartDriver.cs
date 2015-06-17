@@ -38,27 +38,35 @@ namespace MainBit.Captcha.Drivers
 
         protected override DriverResult Editor(CaptchaPart part, dynamic shapeHelper)
         {
-            //var settings = _services.WorkContext.CurrentSite.As<CaptchaSettingsPart>();
-            var settings = new CaptchaSettingsPart();
-            var httpContext = _httpContextAccessor.Current();
+            var settings = _captchaService.GetSettings();
 
-            if (settings.IsForNotAuthUsersOnly && httpContext.Request.IsAuthenticated)
+            if (settings.IsForNotAuthUsersOnly && _httpContextAccessor.Current().Request.IsAuthenticated)
                 return null;
 
-            var captchaVM = new CaptchaViewModel();
-            captchaVM.Src = _captchaService.GenerateCaptcha(captchaVM.Guid.ToString());
-            return ContentShape("Parts_Captcha_Edit", () => shapeHelper.EditorTemplate(TemplateName: "Parts/Captcha", Model: captchaVM, Prefix: Prefix));
-            //return Combined(                
-            //);
+            var captchaEVM = new CaptchaEditViewModel()
+            {
+                Captcha = _captchaService.GetOrGenerateCaptcha(Guid.NewGuid())
+            };
+            return ContentShape("Parts_Captcha_Edit", () => shapeHelper.EditorTemplate(TemplateName: "Parts/Captcha", Model: captchaEVM, Prefix: Prefix));
         }
 
         protected override DriverResult Editor(CaptchaPart part, IUpdateModel updater, dynamic shapeHelper)
         {
-            var captchaVM = new CaptchaViewModel();
-            //updater.TryUpdateModel(part, Prefix, null, null);
-            if (!_captchaService.IsCaptchaValid())
+            var captchaEVM = new CaptchaEditViewModel();
+            if (updater.TryUpdateModel(captchaEVM, Prefix, null, null))
             {
-                updater.AddModelError("Captcha", T("Captcha invalid."));
+                if (!_captchaService.IsCaptchaValid(captchaEVM.Captcha.Guid, captchaEVM.Value))
+                {
+
+                }
+                else
+                {
+                    updater.AddModelError("Captcha", T("Captcha is invalid."));
+                }
+            }
+            else 
+            {
+                updater.AddModelError("Captcha", T("Captcha error."));
             }
             return Editor(part, shapeHelper);
         }

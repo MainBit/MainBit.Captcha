@@ -8,6 +8,7 @@ using MainBit.Captcha.Services;
 using Orchard;
 using Orchard.ContentManagement;
 using MainBit.Captcha.Models;
+using MainBit.Captcha.ViewModel;
 
 namespace MainBit.Captcha.Controllers
 {
@@ -34,8 +35,8 @@ namespace MainBit.Captcha.Controllers
         public void Render(string challengeGuid, int width, int height)
         {
             // Retrieve the solution text from Session[]
-            string key = (string)HttpContext.Session[CaptchaServiceConstants.SESSION_KEY_PREFIX + challengeGuid];
-            if (!string.IsNullOrEmpty(key))
+            var captcha = HttpContext.Session[CaptchaServiceConstants.SESSION_KEY_PREFIX + challengeGuid] as CaptchaViewModel;
+            if (captcha != null)
             {
                 //var settings = _orchardServices.WorkContext.CurrentSite.As<CaptchaSettingsPart>();
                 var settings = new CaptchaSettingsPart();
@@ -69,12 +70,12 @@ namespace MainBit.Captcha.Controllers
                     g.Clear(_background);
                     // Perform trial rendering to determine best font size
                     SizeF finalSize;
-                    SizeF testSize = g.MeasureString(key, font);
+                    SizeF testSize = g.MeasureString(captcha.Value, font);
                     float bestFontSize = Math.Min(settings.ImageWidth / testSize.Width,
                         settings.ImageHeight / testSize.Height) * 0.95f;
                     using (Font finalFont = new Font(settings.ImageFont, bestFontSize))
                     {
-                        finalSize = g.MeasureString(key, finalFont);
+                        finalSize = g.MeasureString(captcha.Value, finalFont);
                     }
                     // Get a path representing the text centered on the canvas
                     g.PageUnit = GraphicsUnit.Point;
@@ -82,7 +83,7 @@ namespace MainBit.Captcha.Controllers
                         (settings.ImageHeight - finalSize.Height) / 2);
                     using (GraphicsPath path = new GraphicsPath())
                     {
-                        path.AddString(key, new FontFamily(settings.ImageFont), 0,
+                        path.AddString(captcha.Value, new FontFamily(settings.ImageFont), 0,
                             bestFontSize, textTopLeft, StringFormat.GenericDefault);
                         // Render the path to the bitmap
                         g.SmoothingMode = SmoothingMode.HighQuality;
