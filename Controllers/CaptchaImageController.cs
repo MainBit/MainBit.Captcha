@@ -9,6 +9,8 @@ using Orchard;
 using Orchard.ContentManagement;
 using MainBit.Captcha.Models;
 using MainBit.Captcha.ViewModel;
+using Orchard.Localization;
+using Orchard.Logging;
 
 namespace MainBit.Captcha.Controllers
 {
@@ -30,14 +32,21 @@ namespace MainBit.Captcha.Controllers
         {
             _captchaService = captchaService;
             _orchardServices = orchardServices;
+
+            Logger = NullLogger.Instance;
+            T = NullLocalizer.Instance;
         }
 
-        public void Render(string challengeGuid, int width, int height)
+        public ILogger Logger { get; set; }
+        public Localizer T { get; set; }
+
+        [OutputCache(Duration = 0, NoStore = true)]
+        public FileResult GetCaptchaImage(string challengeGuid, int width, int height)
         {
             // Retrieve the solution text from Session[]
             var captcha = HttpContext.Session[CaptchaServiceConstants.SESSION_KEY_PREFIX + challengeGuid] as CaptchaViewModel;
             if (captcha != null)
-            {
+              {
                 //var settings = _orchardServices.WorkContext.CurrentSite.As<CaptchaSettingsPart>();
                 var settings = new CaptchaSettingsPart();
                 settings.ImageWidth = width;
@@ -90,15 +99,27 @@ namespace MainBit.Captcha.Controllers
                         g.FillPath(_foreground, DeformPath(path, settings));
                         g.Flush();
                         // Send the image to the response stream in PNG format
-                        Response.ContentType = "image/png";
+                        //.ContentType = "image/png";
+                        //using (var memoryStream = new MemoryStream())
+                        //{
+                        //    bmp.Save(memoryStream, ImageFormat.Png);
+                        //    memoryStream.WriteTo(Response.OutputStream);
+                        //    Logger.Log(LogLevel.Debug, null, "111");
+                        //}
+
+                        // Send the image to the response stream in PNG format
+                        //Response.ContentType = "image/png";
                         using (var memoryStream = new MemoryStream())
                         {
+                            //Response.Clear();
                             bmp.Save(memoryStream, ImageFormat.Png);
-                            memoryStream.WriteTo(Response.OutputStream);
+                            return new FileContentResult(memoryStream.GetBuffer(), "image/png");
                         }
                     }
                 }
             }
+
+            return null;
         }
 
         private GraphicsPath DeformPath(GraphicsPath path, CaptchaSettingsPart settings)

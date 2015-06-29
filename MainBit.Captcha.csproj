@@ -103,6 +103,7 @@
     <Compile Include="Migrations.cs" />
     <Compile Include="Models\CaptchaSettingsPart.cs" />
     <Compile Include="Models\CaptchaPart.cs" />
+    <Compile Include="Routes.cs" />
     <Compile Include="Services\CaptchaService.cs" />
     <Compile Include="Services\ICaptchaService.cs" />
     <Compile Include="ViewModel\CaptchaViewModel.cs" />

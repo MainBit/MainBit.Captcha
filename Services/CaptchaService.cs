@@ -40,7 +40,7 @@ namespace MainBit.Captcha.Services
                 captcha = new CaptchaViewModel()
                 {
                     Guid = challengeGuid,
-                    Src = _urlHelper.Action("Render", "CaptchaImage",
+                    Src = _urlHelper.Action("GetCaptchaImage", "CaptchaImage",
                         new { area = "MainBit.Captcha", challengeGuid, height = settings.ImageHeight, width = settings.ImageWidth }),
                     Width = settings.ImageWidth,
                     Height = settings.ImageHeight,
