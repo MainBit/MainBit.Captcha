@@ -41,7 +41,7 @@ namespace MainBit.Captcha.Controllers
         public Localizer T { get; set; }
 
         [OutputCache(Duration = 0, NoStore = true)]
-        public FileResult GetCaptchaImage(string challengeGuid, int width, int height)
+        public FileContentResult GetCaptchaImage(string challengeGuid, int width, int height)
         {
             // Retrieve the solution text from Session[]
             var captcha = HttpContext.Session[CaptchaServiceConstants.SESSION_KEY_PREFIX + challengeGuid] as CaptchaViewModel;
