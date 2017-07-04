@@ -55,7 +55,7 @@ namespace MainBit.Captcha.Drivers
             var captchaEVM = new CaptchaEditViewModel();
             if (updater.TryUpdateModel(captchaEVM, Prefix, null, null))
             {
-                if (!_captchaService.IsCaptchaValid(captchaEVM.Captcha.Guid, captchaEVM.Value))
+                if (_captchaService.IsCaptchaValid(captchaEVM.Captcha.Guid, captchaEVM.Value))
                 {
 
                 }

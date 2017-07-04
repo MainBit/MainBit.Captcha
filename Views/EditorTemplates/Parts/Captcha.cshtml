@@ -1,11 +1,9 @@
-﻿@model MainBit.Captcha.ViewModel.CaptchaViewModel
+﻿@model MainBit.Captcha.ViewModel.CaptchaEditViewModel
 <fieldset>
     <label class="required">
         @T("Type captcha")<br />
-        <img src="@(Model.Src)"/>
+        <img src="@(Model.Captcha.Src)"/>
     </label>
-    <input id="@(Model.ValueFieldName)" name="@(Model.ValueFieldName)" required="required" type="text" value="">
-    <input id="@(Model.GuidFieldName)" name="@(Model.GuidFieldName)" type="hidden" value="@(Model.Guid)">
-    @*@Html.TextBox(Model.ValueFieldName, "", new { required = "required" })
-    @Html.Hidden(Model.GuidFieldName, Model.Guid)*@
+    <input id="@Html.IdFor(m => m.Value)" name="@Html.NameFor(m => m.Value)" required="required" type="text" value="">
+    <input id="@Html.IdFor(m => m.Captcha.Guid)" name="@Html.NameFor(m => m.Captcha.Guid)" type="hidden" value="@(Model.Captcha.Guid)">
 </fieldset>
